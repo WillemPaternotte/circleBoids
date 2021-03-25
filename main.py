@@ -30,22 +30,29 @@ point.setheading(rotation)
 
 
 time = 0
-while time < 500:
-    pos = point.pos()
-    if not(math.pow(pos[0],2)+math.pow(pos[1],2) >= math.pow(circleSize,2)):
-        point.forward(5)
-    else:
-        dx = 0 + pos[0]
-        dy = 0 + pos[1]
-        plane = ((math.atan(dy/dx)*180)/math.pi)
-        print(plane)
-
-        rotation = plane + (plane - rotation) -180
-        point.setheading(rotation)
-        point.forward(2.5)
-        
-    
+pos = point.pos()
+while time < 2000:
     oldPos = pos
+    pos = point.pos()
+    if math.pow(pos[0],2)+math.pow(pos[1],2) >= math.pow(circleSize,2):
+        adx = 0 + pos[0]
+        ady = 0 + pos[1]
+        plane = ((math.atan(ady/adx)*180)/math.pi)
+
+        dx = oldPos[0]-pos[0]
+        dy = oldPos[1]-pos[1]
+
+        cSquare = math.pow(dx, 2) + math.pow(dy, 2)
+        rotation = math.degrees(math.asin(dy/math.sqrt(cSquare)))
+        print(rotation)
+
+        rotation = plane + (plane - rotation) + 90
+        print(rotation)
+        point.setheading(rotation)
+        point.forward(1)
+    else:
+        point.forward(2.5)
+
     time += 1
 
 
