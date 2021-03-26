@@ -17,7 +17,6 @@ circle.goto(0,-(circleSize))
 circle.pendown()
 circle.circle(circleSize)
 
-
 x = random.randint(-50, 50)
 y = random.randint(-50, 50)
 rotation = random.randint(0, 360)
@@ -34,24 +33,33 @@ pos = point.pos()
 while time < 2000:
     oldPos = pos
     pos = point.pos()
-    if math.pow(pos[0],2)+math.pow(pos[1],2) >= math.pow(circleSize,2):
+    if pos[0] ** 2+pos[1] ** 2 >= circleSize**2:
         adx = 0 + pos[0]
         ady = 0 + pos[1]
         plane = ((math.atan(ady/adx)*180)/math.pi)
 
         dx = oldPos[0]-pos[0]
         dy = oldPos[1]-pos[1]
+        rotation = math.degrees(math.atan(dy/dx))
 
-        cSquare = math.pow(dx, 2) + math.pow(dy, 2)
-        rotation = math.degrees(math.asin(dy/math.sqrt(cSquare)))
-        print(rotation)
+        if dx<0:
+            if dy>0:
+                rotation += 360
+        elif dx>0:
+            rotation += 180
+            
+        m1 = ady / adx
+        m2 = dy / dx
+        inpactAngle = math.degrees(math.atan((m2 - m1)/(1+m1*m2)))
 
-        rotation = plane + (plane - rotation) + 90
-        print(rotation)
+        rotation += 180
+        rotation -= 2*inpactAngle
+
         point.setheading(rotation)
-        point.forward(1)
-    else:
         point.forward(2.5)
+       
+    else:
+        point.forward(1)
 
     time += 1
 
