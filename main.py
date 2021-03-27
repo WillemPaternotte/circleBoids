@@ -14,6 +14,7 @@ circle.hideturtle()
 circle.speed(0)
 circle.penup()
 circle.goto(0,-(circleSize))
+circle.pendown()
 circle.circle(circleSize)
 
 
@@ -34,7 +35,6 @@ for point in points:
     point.speed(0)
     point.goto(x, y)
     point.setheading(rotation)
-    point.pendown()
 
 def movement(object, oldPos, pos, circleSize):
     if pos[0] ** 2+pos[1] ** 2 >= circleSize**2:
