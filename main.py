@@ -6,7 +6,7 @@ window = turtle.Screen()
 window.bgcolor("black")
 window.title("simulatie")
 
-circleSize = 200
+circleSize = 50
 
 circle = turtle.Turtle()
 circle.color("white")
@@ -44,7 +44,10 @@ def movement(object, oldPos, pos, circleSize):
 
         dx = oldPos[0]-pos[0]
         dy = oldPos[1]-pos[1]
-        rotation = math.degrees(math.atan(dy/dx))
+        if dx != 0:
+            rotation = math.degrees(math.atan(dy/dx))
+        else:
+            return 0
 
         if dx<0:
             if dy>0:
@@ -54,7 +57,10 @@ def movement(object, oldPos, pos, circleSize):
             
         m1 = ady / adx
         m2 = dy / dx
-        inpactAngle = math.degrees(math.atan((m2 - m1)/(1+m1*m2)))
+        if  m1*m2 != -1:
+            inpactAngle = math.degrees(math.atan((m2 - m1)/(1+m1*m2)))
+        else:
+            return 0
 
         rotation += 180
         rotation -= 2*inpactAngle
@@ -65,22 +71,21 @@ def movement(object, oldPos, pos, circleSize):
     else:
         object.forward(1)
 
-def steering(object, oldPos, pos, points):
-    distance = 10000
+def avoiding(object, oldPos, pos, points):
+    turning = 0
     for point in points:
         if point != object:
-            # if object.distance(point)< distance:
-            #     distance = object.distance(point)
-            #     nearestPoint = point
-
             if object.distance(point) < 25: 
-                adx = abs(point.pos()[0] - pos[0])
-                ady = abs(point.pos()[1] - pos[1])
+                adx = pos[0] - point.pos()[0] 
+                ady = pos[1] - point.pos()[1]
 
 
                 dx = oldPos[0]-pos[0]
                 dy = oldPos[1]-pos[1]
-                rotation = math.degrees(math.atan(dy/dx))
+                if dx != 0:
+                    rotation = math.degrees(math.atan(dy/dx))
+                else:
+                    return 0
 
                 if dx<0:
                     if dy>0:
@@ -90,13 +95,57 @@ def steering(object, oldPos, pos, points):
                     
                 m1 = ady / adx
                 m2 = dy / dx
-                inpactAngle = math.degrees(math.atan((m2 - m1)/(1+m1*m2)))
+                if  m1*m2 != -1:
+                    inpactAngle = math.degrees(math.atan((m2 - m1)/(1+m1*m2)))
+                else:
+                    return 0
+
+                if 0<inpactAngle<135:
+                    turning -= 5
+                elif -135<inpactAngle<0:
+                    turning += 5
+    return turning
+                
+def centring(object, oldPos, pos):
+    center = 0
+    adx = pos[0] 
+    ady = pos[1] 
+
+    dx = oldPos[0]-pos[0]
+    dy = oldPos[1]-pos[1]
+    if dx != 0:
+        rotation = math.degrees(math.atan(dy/dx))
+    else:
+        return 0
+
+    if dx<0:
+        if dy>0:
+            rotation += 360
+    elif dx>0:
+        rotation += 180
         
-                if 0<inpactAngle<90:
-                    object.left(5)
-                elif -90<inpactAngle<0:
-                    object.right(5) 
+    m1 = ady / adx
+    m2 = dy / dx
+    if  m1*m2 != -1:
+        inpactAngle = math.degrees(math.atan((m2 - m1)/(1+m1*m2)))
+    else:
+        return 0
+
+    if 0<inpactAngle<180:
+        center += 1
+    else:
+        center -= 1
     
+    return center
+
+    
+def steering(object, oldPos, pos, points):
+    avoid = avoiding(object, oldPos, pos, points)
+    center = centring(object, oldPos, pos)
+    
+    steering = avoid + center
+    object.right(steering)
+
 time = 0
 
 Apos = A.pos()
