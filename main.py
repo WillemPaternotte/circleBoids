@@ -6,7 +6,7 @@ window = turtle.Screen()
 window.bgcolor("black")
 window.title("simulatie")
 
-circleSize = 50
+circleSize = 100
 
 circle = turtle.Turtle()
 circle.color("white")
@@ -14,7 +14,6 @@ circle.hideturtle()
 circle.speed(0)
 circle.penup()
 circle.goto(0,-(circleSize))
-circle.pendown()
 circle.circle(circleSize)
 
 
