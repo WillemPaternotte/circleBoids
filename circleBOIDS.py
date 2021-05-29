@@ -2,7 +2,12 @@ import math
 import random
 import turtle
 
-class point:
+#sets up the screen
+window = turtle.Screen()
+window.bgcolor("black")
+window.title("circleBOIDS")
+
+class point: #wow points class, so cool
     def __init__(self, **kwargs):
         self.index = kwargs["index"] or 0
         self.x = random.randint(-50, 50)
@@ -10,13 +15,13 @@ class point:
         self.rotation = random.randint(0, 360)
         self.point = turtle.Turtle()
         self.point.penup()
+        self.point.color("white")
         self.point.speed(0)
         self.point.goto(self.x, self.y)
-        self.point.pendown()
         self.point.setheading(self.rotation)
 
-    def movement(self, oldPos, pos, circleSize):
-        if pos[0] ** 2+ pos[1] ** 2 >= circleSize**2:
+    def movement(self, oldPos, pos, circleSize): #makes points move foward and stay inside the circle
+        if pos[0] ** 2+ pos[1] ** 2 >= circleSize**2: # if outside circle turn around
             self.inpactAngle = twoPointAngle(oldPos, pos, [0,0])
 
             self.rotation = self.point.heading()   
@@ -30,14 +35,14 @@ class point:
         else:
             self.point.forward(1)
 
-    def steering(self, **kwargs):
+    def steering(self, **kwargs): # i may add all steering functions within this function to tidy things up, but it isn't necessary
         self.index = kwargs["index"]
         self.oldPossitions = kwargs["oldPossitions"]
         self.possitions = kwargs["possitions"]
         self.flockPossition = kwargs["flockPossitions"]
         self.flockHeading = kwargs["flockHeading"]
 
-    def avoiding(self, oldPossitions, possitions, flock):
+    def avoiding(self, oldPossitions, possitions, flock): #complicated code that handles avoiding
         turning = 0
         for point in flock:
             if point.index != self.index:
@@ -53,7 +58,7 @@ class point:
                         turning -= 6
         self.point.right(turning)    
 
-    def aligning(self, flockHeading):
+    def aligning(self, flockHeading): # adjusts steering to go in heading flock
         turning = 0
         if self.point.heading() > flockHeading:
             turning = 3
@@ -62,7 +67,7 @@ class point:
 
         self.point.right(turning)
     
-    def centring(self, flockPosition):
+    def centring(self, flockPosition): # asjust steering to the center of the flock
         turning =0
         angle = self.point.towards(flockPosition) - self.point.heading()
         if angle > 180:
@@ -81,7 +86,8 @@ class point:
 
 
 
-def twoPointAngle(oldPos, pos, bPoint):
+def twoPointAngle(oldPos, pos, bPoint): #finds the angle between two points,
+    # it isn't very efficient and i have removed in all but 1 function.
     adx = pos[0] - bPoint[0]
     ady = pos[1] - bPoint[1]
 
@@ -97,7 +103,7 @@ def twoPointAngle(oldPos, pos, bPoint):
     
     return inpactAngle
 
-def rotation(oldPos, pos):
+def rotation(oldPos, pos): #uses two positions to find heading
     dx = oldPos[0]-pos[0]
     dy = oldPos[1]-pos[1]
       
@@ -115,14 +121,14 @@ def rotation(oldPos, pos):
     return rotation
 
 
-def flockCenter(possitions):
+def flockCenter(possitions): #gives Coordinates of the flock
     xList = []
     yList = []
     for point in possitions:
         xList.append(point[0])
         yList.append(point[1])
     
-    x = sum(xList)/len(xList)
+    x = sum(xList)/len(xList) 
     y = sum(yList)/len(yList)
 
     return x,y
@@ -133,17 +139,19 @@ def flockCenter(possitions):
 # //////////MAIN CODE//////////////
 circleSize = 100
 
+    #circle setup
 circle = turtle.Turtle()
 circle.hideturtle()
 circle.speed(0)
 circle.penup()
 circle.goto(0,-(circleSize))
+circle.color("white")
 circle.pendown()
 circle.circle(circleSize)
 
-
+# SETTING variables
 numPoints = 8
-
+    #flock creation
 flock = []
 for x in range(numPoints):
     flock.append(point(index = x))
@@ -159,9 +167,12 @@ for point in flock:
     possitions.append(point.point.pos())
     point.point.forward(1)
 
-time = 0
 flockCenterPos = flockCenter(possitions)  
+
+#/////MAINLOOP/////
+time = 0
 while time < 500:
+    #resetting position and heading variables
     for point in flock:
         oldPossitions[point.index] = possitions[point.index]
     
@@ -172,6 +183,7 @@ while time < 500:
     flockCenterPos = flockCenter(possitions)
     flockHeading = rotation(oldFlockCenterPos, flockCenterPos)
 
+    #movement and steering
     for point in flock:
         point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
         point.avoiding( oldPossitions, possitions, flock)
