@@ -2,7 +2,6 @@ import math
 import random
 import turtle
 
-circleSize = 100
 class point:
     def __init__(self, **kwargs):
         self.index = kwargs["index"] or 0
@@ -16,37 +15,11 @@ class point:
         self.point.pendown()
         self.point.setheading(self.rotation)
 
-    def drawSqaure(self, size):
-        for x in range(4):
-            self.point.forward(size)
-            self.point.right(90)
-    
     def movement(self, oldPos, pos, circleSize):
-        self.oldPos = oldPos
-        self.pos = pos
-        if self.pos[0] ** 2+self.pos[1] ** 2 >= circleSize**2:
-            self.adx = 0 + self.pos[0]
-            self.ady = 0 + self.pos[1]
+        if pos[0] ** 2+ pos[1] ** 2 >= circleSize**2:
+            self.inpactAngle = twoPointAngle(oldPos, pos, [0,0])
 
-            self.dx = self.oldPos[0]-self.pos[0]
-            self.dy = self.oldPos[1]-self.pos[1]
-            if self.dx != 0:
-                self.rotation = math.degrees(math.atan(self.dy/self.dx))
-            else:
-                return 0
-
-            if self.dx<0:
-                if self.dy>0:
-                    self.rotation += 360
-            elif self.dx>0:
-                self.rotation += 180
-                
-            self.m1 = self.ady / self.adx
-            self.m2 = self.dy / self.dx
-            if  self.m1*self.m2 != -1:
-                self.inpactAngle = math.degrees(math.atan((self.m2 - self.m1)/(1+self.m1*self.m2)))
-            else:
-                return 0
+            self.rotation = self.point.heading()   
 
             self.rotation += 180
             self.rotation -= 2*self.inpactAngle
@@ -57,6 +30,88 @@ class point:
         else:
             self.point.forward(1)
 
+    def steering(self, **kwargs):
+        self.index = kwargs["index"]
+        self.oldPossitions = kwargs["oldPossitions"]
+        self.possitions = kwargs["possitions"]
+        self.flockPossition = kwargs["flockPossitions"]
+        self.flockHeading = kwargs["flockHeading"]
+
+    def avoiding(self, oldPossitions, possitions, flock):
+        turning = 0
+        for point in flock:
+            if point.index != self.index:
+                if self.point.distance(point.point.pos())< 15:
+                    angle = self.point.towards(possitions[point.index]) - self.point.heading() #twoPointAngle(oldPossitions[self.index], possitions[self.index], possitions[point.index])
+                    if angle > 180:
+                        angle -= 360
+                    elif angle < -180:
+                        angle += 360
+                    if 0<=angle< 120:
+                        turning += 6
+                    elif -120<angle<0:
+                        turning -= 6
+                    print(self.point.towards(possitions[point.index]), self.point.heading(),angle)
+        self.point.right(turning)    
+
+    
+
+
+
+
+
+def twoPointAngle(oldPos, pos, bPoint):
+    adx = pos[0] - bPoint[0]
+    ady = pos[1] - bPoint[1]
+
+    dx = oldPos[0]-pos[0]
+    dy = oldPos[1]-pos[1]
+      
+    m1 = ady / adx
+    m2 = dy / dx
+    if  m1*m2 != -1:
+        inpactAngle = math.degrees(math.atan((m2 - m1)/(1+m1*m2)))
+    else:
+        return 0
+    
+    return inpactAngle
+
+def rotation(oldPos, pos):
+    dx = oldPos[0]-pos[0]
+    dy = oldPos[1]-pos[1]
+      
+    if dx != 0:
+        rotation = math.degrees(math.atan(dy/dx))
+    else:
+        return 0
+
+    if dx<0:
+        if dy>0:
+            rotation += 360
+    elif dx>0:
+        rotation += 180
+
+    return rotation
+
+
+def flockCenter(possitions):
+    xList = []
+    yList = []
+    for point in possitions:
+        xList.append(point[0])
+        yList.append(point[1])
+    
+    x = sum(xList)/len(xList)
+    y = sum(yList)/len(yList)
+
+    return x,y
+
+
+
+
+# //////////MAIN CODE//////////////
+circleSize = 75
+
 circle = turtle.Turtle()
 circle.hideturtle()
 circle.speed(0)
@@ -65,24 +120,41 @@ circle.goto(0,-(circleSize))
 circle.pendown()
 circle.circle(circleSize)
 
+
+numPoints = 4
+
 flock = []
-for x in range(10):
+for x in range(numPoints):
     flock.append(point(index = x))
 
 possitions = []
+oldPossitions = []
+
+for point in flock:
+    oldPossitions.append(point.point.pos())
+    point.point.forward(1)
+
 for point in flock:
     possitions.append(point.point.pos())
     point.point.forward(1)
 
 time = 0  
-while time < 200:
-    oldPossitions = possitions
+while time < 500:
+    for point in flock:
+        oldPossitions[point.index] = possitions[point.index]
+    
     for point in flock:
         possitions[point.index] = point.point.pos()
 
+    # flockCenter = flockCenter(possitions)
+
     for point in flock:
         point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
+        point.avoiding( oldPossitions, possitions, flock)
     
+    # oldFlockCenter = flockCenter
+
+
     time +=1
 
 
