@@ -70,7 +70,7 @@ def movement(object, oldPos, pos, circleSize):
     else:
         object.forward(1)
 
-def avoiding(object, oldPos, pos, points):
+def avoiding(object, oldPos, pos, points):  #moet beter kunnen
     turning = 0
     for point in points:
         if point != object:
@@ -104,8 +104,9 @@ def avoiding(object, oldPos, pos, points):
                 elif -135<inpactAngle<0:
                     turning += 5
     return turning
+     
                 
-def centring(object, oldPos, pos):
+def flockCentring(object, oldPos, pos): #midden alle punten zoeken? alle punten 1 lijst loop maximale en minimale, gemiddelde = centre
     center = 0
     adx = pos[0] 
     ady = pos[1] 
@@ -137,13 +138,28 @@ def centring(object, oldPos, pos):
     
     return center
 
-    
+def flockHeading():
+    # dot product?? centrum functie nu en old, dy/dx?
+    print("huts")
+      
 def steering(object, oldPos, pos, points):
     avoid = avoiding(object, oldPos, pos, points)
-    center = centring(object, oldPos, pos)
+    center = flockCentring(object, oldPos, pos)
     
     steering = avoid + center
     object.right(steering)
+
+def flockCenter(possitions):
+    xList = []
+    yList = []
+    for point in possitions:
+        xList.append(point[0])
+        yList.append(point[1])
+    
+    x = sum(xLyst)/len(xList)
+    y = sum(yList)/len(yList)
+
+    return x,y
 
 time = 0
 

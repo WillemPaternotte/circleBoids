@@ -25,7 +25,7 @@ class point:
             self.rotation -= 2*self.inpactAngle
 
             self.point.setheading(self.rotation)
-            self.point.forward(2.5)
+            self.point.forward(3)
 
         else:
             self.point.forward(1)
@@ -51,10 +51,31 @@ class point:
                         turning += 6
                     elif -120<angle<0:
                         turning -= 6
-                    print(self.point.towards(possitions[point.index]), self.point.heading(),angle)
         self.point.right(turning)    
 
+    def aligning(self, flockHeading):
+        turning = 0
+        if self.point.heading() > flockHeading:
+            turning = 3
+        else:
+            turning = -3
+
+        self.point.right(turning)
     
+    def centring(self, flockPosition):
+        turning =0
+        angle = self.point.towards(flockPosition) - self.point.heading()
+        if angle > 180:
+            angle -= 360
+        elif angle < -180:
+            angle += 360 
+        
+        if 0<angle< 180:
+            turning = -3
+        else:
+            turning = 3
+
+        self.point.right(turning)         
 
 
 
@@ -110,7 +131,7 @@ def flockCenter(possitions):
 
 
 # //////////MAIN CODE//////////////
-circleSize = 75
+circleSize = 100
 
 circle = turtle.Turtle()
 circle.hideturtle()
@@ -121,7 +142,7 @@ circle.pendown()
 circle.circle(circleSize)
 
 
-numPoints = 4
+numPoints = 8
 
 flock = []
 for x in range(numPoints):
@@ -138,23 +159,25 @@ for point in flock:
     possitions.append(point.point.pos())
     point.point.forward(1)
 
-time = 0  
+time = 0
+flockCenterPos = flockCenter(possitions)  
 while time < 500:
     for point in flock:
         oldPossitions[point.index] = possitions[point.index]
     
     for point in flock:
         possitions[point.index] = point.point.pos()
-
-    # flockCenter = flockCenter(possitions)
+    
+    oldFlockCenterPos = flockCenterPos
+    flockCenterPos = flockCenter(possitions)
+    flockHeading = rotation(oldFlockCenterPos, flockCenterPos)
 
     for point in flock:
         point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
         point.avoiding( oldPossitions, possitions, flock)
+        point.centring( flockCenterPos)
+        point.aligning( flockHeading)
     
-    # oldFlockCenter = flockCenter
-
-
     time +=1
 
 
