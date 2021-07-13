@@ -35,14 +35,33 @@ class point: #wow points class, so cool
         else:
             self.point.forward(1)
 
-    def steering(self, **kwargs): # i may add all steering functions within this function to tidy things up, but it isn't necessary
-        self.index = kwargs["index"]
-        self.oldPossitions = kwargs["oldPossitions"]
-        self.possitions = kwargs["possitions"]
-        self.flockPossition = kwargs["flockPossitions"]
-        self.flockHeading = kwargs["flockHeading"]
+    def steering(self, **kwargs): # all steering function combined in 1
+        # self.index = kwargs["index"]
+        possitions = kwargs["possitions"]
+        oldPossitions = kwargs["oldPossitions"]
+        flock = kwargs["flock"]
 
-    def avoiding(self, oldPossitions, possitions, flock): #complicated code that handles avoiding
+        oldLocalFlock = []
+        localFlock = []
+        for point in flock: 
+            if point.index != self.index:
+                if self.point.distance(point.point.pos())< 45: #gets only the local flock
+                    oldLocalFlock.append(oldPossitions[point.index])
+                    localFlock.append(possitions[point.index])
+        
+        turning = 0
+        if len(localFlock)!= 0:
+            centerOldLocalFlock = flockCenter(oldLocalFlock)
+            centerLocalFlock = flockCenter(localFlock)
+            localFlockHeading = rotation(centerOldLocalFlock, centerLocalFlock)
+            heading =  self.point.heading()
+
+            turning += self.centring(centerLocalFlock, heading)
+            turning += self.aligning(localFlockHeading, heading)
+            turning += self.newAvoiding(localFlock, heading)
+        self.point.right(turning)
+        
+    def avoiding(self, oldPossitions, possitions, flock):
         turning = 0
         for point in flock:
             if point.index != self.index:
@@ -56,20 +75,35 @@ class point: #wow points class, so cool
                         turning += 6
                     elif -120<angle<0:
                         turning -= 6
-        self.point.right(turning)    
+        self.point.right(turning)   
 
-    def aligning(self, flockHeading): # adjusts steering to go in heading flock
+    def newAvoiding(self, localFlock, heading): #complicated code that handles avoiding
         turning = 0
-        if self.point.heading() > flockHeading:
+        for point in localFlock:
+            angle = self.point.towards(point) - heading #twoPointAngle(oldPossitions[self.index], possitions[self.index], possitions[point.index])
+            if angle > 180:
+                angle -= 360
+            elif angle < -180:
+                        angle += 360
+            if 0<=angle< 120:
+                turning += 6
+            elif -120<angle<0:
+                turning -= 6
+        return turning  
+
+    def aligning(self, flockHeading, heading): # adjusts steering to go in heading flock
+        turning = 0
+        if heading > flockHeading:
             turning = 3
         else:
             turning = -3
 
-        self.point.right(turning)
+        return turning
     
-    def centring(self, flockPosition): # asjust steering to the center of the flock
+    def centring(self, flockPosition, heading): # asjust steering to the center of the flock
         turning =0
-        angle = self.point.towards(flockPosition) - self.point.heading()
+        
+        angle = self.point.towards(flockPosition) - heading
         if angle > 180:
             angle -= 360
         elif angle < -180:
@@ -80,8 +114,7 @@ class point: #wow points class, so cool
         else:
             turning = 3
 
-        self.point.right(turning)         
-
+        return turning
 
 
 
@@ -186,9 +219,10 @@ while time < 500:
     #movement and steering
     for point in flock:
         point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
-        point.avoiding( oldPossitions, possitions, flock)
-        point.centring( flockCenterPos)
-        point.aligning( flockHeading)
+        # point.avoiding( oldPossitions, possitions, flock)
+        # point.centring( flockCenterPos)
+        # point.aligning( flockHeading)
+        point.steering(flock = flock, possitions = possitions, oldPossitions = oldPossitions)
     
     time +=1
 
