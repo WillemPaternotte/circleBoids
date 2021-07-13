@@ -56,28 +56,12 @@ class point: #wow points class, so cool
             localFlockHeading = rotation(centerOldLocalFlock, centerLocalFlock)
             heading =  self.point.heading()
 
-            turning += self.centring(centerLocalFlock, heading)
-            turning += self.aligning(localFlockHeading, heading)
-            turning += self.newAvoiding(localFlock, heading)
+            turning += self.centring(centerLocalFlock, heading) * 4 #tweak multipliers to change beheavour 
+            turning += self.aligning(localFlockHeading, heading) * 4
+            turning += self.avoiding(localFlock, heading) * 6
         self.point.right(turning)
         
-    def avoiding(self, oldPossitions, possitions, flock):
-        turning = 0
-        for point in flock:
-            if point.index != self.index:
-                if self.point.distance(point.point.pos())< 15:
-                    angle = self.point.towards(possitions[point.index]) - self.point.heading() #twoPointAngle(oldPossitions[self.index], possitions[self.index], possitions[point.index])
-                    if angle > 180:
-                        angle -= 360
-                    elif angle < -180:
-                        angle += 360
-                    if 0<=angle< 120:
-                        turning += 6
-                    elif -120<angle<0:
-                        turning -= 6
-        self.point.right(turning)   
-
-    def newAvoiding(self, localFlock, heading): #complicated code that handles avoiding
+    def avoiding(self, localFlock, heading): #complicated code that handles avoiding
         turning = 0
         for point in localFlock:
             angle = self.point.towards(point) - heading #twoPointAngle(oldPossitions[self.index], possitions[self.index], possitions[point.index])
@@ -86,17 +70,17 @@ class point: #wow points class, so cool
             elif angle < -180:
                         angle += 360
             if 0<=angle< 120:
-                turning += 6
+                turning += 1
             elif -120<angle<0:
-                turning -= 6
+                turning -= 1
         return turning  
 
     def aligning(self, flockHeading, heading): # adjusts steering to go in heading flock
         turning = 0
         if heading > flockHeading:
-            turning = 3
+            turning = 1
         else:
-            turning = -3
+            turning = -1
 
         return turning
     
@@ -110,14 +94,14 @@ class point: #wow points class, so cool
             angle += 360 
         
         if 0<angle< 180:
-            turning = -3
+            turning = -1
         else:
-            turning = 3
+            turning = 1
 
         return turning
 
 
-
+#non class based functions
 
 def twoPointAngle(oldPos, pos, bPoint): #finds the angle between two points,
     # it isn't very efficient and i have removed in all but 1 function.
@@ -200,7 +184,6 @@ for point in flock:
     possitions.append(point.point.pos())
     point.point.forward(1)
 
-flockCenterPos = flockCenter(possitions)  
 
 #/////MAINLOOP/////
 time = 0
@@ -212,16 +195,10 @@ while time < 500:
     for point in flock:
         possitions[point.index] = point.point.pos()
     
-    oldFlockCenterPos = flockCenterPos
-    flockCenterPos = flockCenter(possitions)
-    flockHeading = rotation(oldFlockCenterPos, flockCenterPos)
-
     #movement and steering
     for point in flock:
         point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
-        # point.avoiding( oldPossitions, possitions, flock)
-        # point.centring( flockCenterPos)
-        # point.aligning( flockHeading)
+
         point.steering(flock = flock, possitions = possitions, oldPossitions = oldPossitions)
     
     time +=1
