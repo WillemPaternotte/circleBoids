@@ -179,20 +179,15 @@ oldPossitions = []
 for point in flock:
     oldPossitions.append(point.point.pos())
     point.point.forward(1)
-
-for point in flock:
     possitions.append(point.point.pos())
     point.point.forward(1)
 
 
 #/////MAINLOOP/////
-time = 0
-while time < 500:
+for _ in range(500):
     #resetting position and heading variables
     for point in flock:
         oldPossitions[point.index] = possitions[point.index]
-    
-    for point in flock:
         possitions[point.index] = point.point.pos()
     
     #movement and steering
@@ -200,9 +195,6 @@ while time < 500:
         point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
 
         point.steering(flock = flock, possitions = possitions, oldPossitions = oldPossitions)
-    
-    time +=1
-
 
 
 turtle.mainloop()
