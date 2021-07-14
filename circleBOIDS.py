@@ -1,6 +1,7 @@
 import math
 import random
 import turtle
+import numpy as np
 
 #sets up the screen
 window = turtle.Screen()
@@ -22,14 +23,14 @@ class point: #wow points class, so cool
 
     def movement(self, oldPos, pos, circleSize): #makes points move foward and stay inside the circle
         if pos[0] ** 2+ pos[1] ** 2 >= circleSize**2: # if outside circle turn around
-            self.inpactAngle = twoPointAngle(oldPos, pos, [0,0])
+            inpactAngle = twoPointAngle(oldPos, pos, [0,0])
 
-            self.rotation = self.point.heading()   
+            rotation = self.point.heading()   
 
-            self.rotation += 180
-            self.rotation -= 2*self.inpactAngle
+            rotation += 180
+            rotation -= 2*inpactAngle
 
-            self.point.setheading(self.rotation)
+            self.point.setheading(rotation)
             self.point.forward(3)
 
         else:
@@ -50,9 +51,13 @@ class point: #wow points class, so cool
                     localFlock.append(possitions[point.index])
         
         turning = 0
+
+        arrayOldLocalFlock = np.array(oldLocalFlock)
+        arrayLocalFlock = np.array(localFlock)
+
         if len(localFlock)!= 0:
-            centerOldLocalFlock = flockCenter(oldLocalFlock)
-            centerLocalFlock = flockCenter(localFlock)
+            centerOldLocalFlock = (np.average(arrayOldLocalFlock[:,0] ), np.average(arrayOldLocalFlock[:,1]))
+            centerLocalFlock = (np.average(arrayLocalFlock[:,0] ), np.average(arrayLocalFlock[:,1]))
             localFlockHeading = rotation(centerOldLocalFlock, centerLocalFlock)
             heading =  self.point.heading()
 
@@ -63,12 +68,12 @@ class point: #wow points class, so cool
         
     def avoiding(self, localFlock, heading): #complicated code that handles avoiding
         turning = 0
-        for point in localFlock:
+        for point in localFlock: # one of the slower parts of the simulation, haven't found a quicker solution
             angle = self.point.towards(point) - heading #twoPointAngle(oldPossitions[self.index], possitions[self.index], possitions[point.index])
             if angle > 180:
                 angle -= 360
             elif angle < -180:
-                        angle += 360
+                angle += 360
             if 0<=angle< 120:
                 turning += 1
             elif -120<angle<0:
@@ -145,12 +150,10 @@ def flockCenter(possitions): #gives Coordinates of the flock
         xList.append(point[0])
         yList.append(point[1])
     
-    x = sum(xList)/len(xList) 
-    y = sum(yList)/len(yList)
+    x = np.average(xList) 
+    y = np.average(yList)
 
     return x,y
-
-
 
 
 # //////////MAIN CODE//////////////
@@ -185,16 +188,14 @@ for point in flock:
 
 #/////MAINLOOP/////
 for _ in range(500):
-    #resetting position and heading variables
     for point in flock:
+        #resetting position and heading variables
         oldPossitions[point.index] = possitions[point.index]
         possitions[point.index] = point.point.pos()
     
-    #movement and steering
-    for point in flock:
+        #movement and steering
         point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
-
         point.steering(flock = flock, possitions = possitions, oldPossitions = oldPossitions)
 
-
+print("done")
 turtle.mainloop()
