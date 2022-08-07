@@ -3,11 +3,6 @@ import random
 import turtle
 import numpy as np
 
-#sets up the screen
-window = turtle.Screen()
-window.bgcolor("black")
-window.title("circleBOIDS")
-
 class point: #wow points class, so cool
     def __init__(self, **kwargs):
         self.index = kwargs["index"] or 0
@@ -155,47 +150,53 @@ def flockCenter(possitions): #gives Coordinates of the flock
 
     return x,y
 
-
 # //////////MAIN CODE//////////////
-circleSize = 100
+if __name__ == "__main__":
 
-    #circle setup
-circle = turtle.Turtle()
-circle.hideturtle()
-circle.speed(0)
-circle.penup()
-circle.goto(0,-(circleSize))
-circle.color("white")
-circle.pendown()
-circle.circle(circleSize)
+    #sets up the screen
+    window = turtle.Screen()
+    window.bgcolor("black")
+    window.title("circleBOIDS")
 
-# SETTING variables
-numPoints = 8
-    #flock creation
-flock = []
-for x in range(numPoints):
-    flock.append(point(index = x))
+    circleSize = 100
 
-possitions = []
-oldPossitions = []
+        #circle setup
+    circle = turtle.Turtle()
+    circle.hideturtle()
+    circle.speed(0)
+    circle.penup()
+    circle.goto(0,-(circleSize))
+    circle.color("white")
+    circle.pendown()
+    circle.circle(circleSize)
 
-for point in flock:
-    oldPossitions.append(point.point.pos())
-    point.point.forward(1)
-    possitions.append(point.point.pos())
-    point.point.forward(1)
+    # SETTING variables
+    numPoints = 8
+        #flock creation
+    flock = []
+    for x in range(numPoints):
+        flock.append(point(index = x))
 
+    possitions = []
+    oldPossitions = []
 
-#/////MAINLOOP/////
-for _ in range(500):
     for point in flock:
-        #resetting position and heading variables
-        oldPossitions[point.index] = possitions[point.index]
-        possitions[point.index] = point.point.pos()
-    
-        #movement and steering
-        point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
-        point.steering(flock = flock, possitions = possitions, oldPossitions = oldPossitions)
+        oldPossitions.append(point.point.pos())
+        point.point.forward(1)
+        possitions.append(point.point.pos())
+        point.point.forward(1)
 
-print("done")
-turtle.mainloop()
+
+    #/////MAINLOOP/////
+    for _ in range(500):
+        for point in flock:
+            #resetting position and heading variables
+            oldPossitions[point.index] = possitions[point.index]
+            possitions[point.index] = point.point.pos()
+        
+            #movement and steering
+            point.movement(oldPossitions[point.index], possitions[point.index], circleSize)
+            point.steering(flock = flock, possitions = possitions, oldPossitions = oldPossitions)
+
+    print("done")
+    turtle.mainloop()
